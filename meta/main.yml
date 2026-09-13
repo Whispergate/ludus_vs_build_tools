@@ -1,20 +1,26 @@
 ---
+dependencies: []
+
 galaxy_info:
+  role_name: ludus_vs_build_tools
   author: Whispergate
-  description: Installs Visual Studio Build Tools and .NET SDK on Windows for MAAS compilation
+  description: >-
+    Silent installation of Visual Studio 2022 Build Tools, Windows SDK,
+    and .NET SDK on Windows Server for MAAS payload compilation.
+  company: ""
   license: BSD-2-Clause
-  min_ansible_version: "2.10"
+  min_ansible_version: "2.14"
   platforms:
     - name: Windows
       versions:
-        - "2022"
+        - all
   galaxy_tags:
+    - ludus
     - windows
     - msvc
     - dotnet
-    - ludus
     - maas
-dependencies: []
+
 collections:
   - ansible.windows
   - chocolatey.chocolatey
