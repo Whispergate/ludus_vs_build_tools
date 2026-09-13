@@ -1,0 +1,53 @@
+---
+- name: Create temp directory for installers
+  ansible.windows.win_file:
+    path: C:\Temp\VSSetup
+    state: directory
+
+- name: Download VS Build Tools installer
+  ansible.windows.win_get_url:
+    url: "{{ ludus_vs_build_tools_installer_url }}"
+    dest: C:\Temp\VSSetup\vs_buildtools.exe
+
+- name: Build VS Build Tools install arguments
+  ansible.builtin.set_fact:
+    _vs_install_args: >-
+      --quiet --wait --norestart
+      --installPath {{ ludus_vs_build_tools_install_dir }}
+      --channelUri {{ ludus_vs_build_tools_channel_url }}
+      {% for workload in ludus_vs_build_tools_workloads %}
+      --add {{ workload }}
+      {% endfor %}
+      {% for component in ludus_vs_build_tools_components %}
+      --add {{ component }}
+      {% endfor %}
+
+- name: Install Visual Studio Build Tools (this takes a while)
+  ansible.windows.win_shell: |
+    Start-Process -FilePath "C:\Temp\VSSetup\vs_buildtools.exe" `
+      -ArgumentList '{{ _vs_install_args }}' `
+      -Wait -PassThru | Select-Object -ExpandProperty ExitCode
+  register: vs_install
+  changed_when: vs_install.stdout_lines[0] | int == 0
+  failed_when: vs_install.stdout_lines[0] | int not in [0, 3010]
+  async: "{{ ludus_vs_build_tools_timeout }}"
+  poll: 30
+
+- name: Install .NET SDK via Chocolatey
+  chocolatey.chocolatey.win_chocolatey:
+    name: "dotnet-sdk"
+    version: "{{ ludus_dotnet_sdk_version }}"
+    state: present
+
+- name: Add VS Build Tools to system PATH
+  ansible.windows.win_path:
+    elements:
+      - '{{ ludus_vs_build_tools_install_dir }}\MSBuild\Current\Bin'
+      - '{{ ludus_vs_build_tools_install_dir }}\VC\Tools\MSVC'
+    scope: machine
+    state: present
+
+- name: Clean up installer
+  ansible.windows.win_file:
+    path: C:\Temp\VSSetup
+    state: absent

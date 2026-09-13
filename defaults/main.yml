@@ -1,0 +1,13 @@
+---
+ludus_vs_build_tools_version: "2022"
+ludus_vs_build_tools_channel_url: "https://aka.ms/vs/17/release/channel"
+ludus_vs_build_tools_installer_url: "https://aka.ms/vs/17/release/vs_buildtools.exe"
+ludus_vs_build_tools_install_dir: "C:\\BuildTools"
+ludus_vs_build_tools_workloads:
+  - Microsoft.VisualStudio.Workload.VCTools
+  - Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools
+ludus_vs_build_tools_components:
+  - Microsoft.VisualStudio.Component.Windows11SDK.22621
+  - Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+ludus_dotnet_sdk_version: "8.0"
+ludus_vs_build_tools_timeout: 3600

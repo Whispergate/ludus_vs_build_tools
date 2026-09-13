@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  author: Whispergate
+  description: Installs Visual Studio Build Tools and .NET SDK on Windows for MAAS compilation
+  license: BSD-2-Clause
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Windows
+      versions:
+        - "2022"
+  galaxy_tags:
+    - windows
+    - msvc
+    - dotnet
+    - ludus
+    - maas
+dependencies: []
+collections:
+  - ansible.windows
+  - chocolatey.chocolatey
