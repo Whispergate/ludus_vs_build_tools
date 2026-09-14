@@ -24,12 +24,20 @@
 
 - name: Install Visual Studio Build Tools (this takes a while)
   ansible.windows.win_shell: |
-    Start-Process -FilePath "C:\Temp\VSSetup\vs_buildtools.exe" `
+    $proc = Start-Process -FilePath "C:\Temp\VSSetup\vs_buildtools.exe" `
       -ArgumentList '{{ _vs_install_args }}' `
-      -Wait -PassThru | Select-Object -ExpandProperty ExitCode
+      -PassThru
+    # Cache the handle so .NET keeps the process object alive and ExitCode
+    # is populated after the process exits (avoids the -Wait/-PassThru race
+    # that throws "Process must exit before requested information...").
+    $null = $proc.Handle
+    $proc.WaitForExit()
+    $proc.ExitCode
   register: vs_install
-  changed_when: vs_install.stdout_lines[0] | int == 0
-  failed_when: vs_install.stdout_lines[0] | int not in [0, 3010]
+  changed_when: (vs_install.stdout_lines | length > 0) and (vs_install.stdout_lines[0] | trim | int == 0)
+  failed_when: >-
+    (vs_install.stdout_lines | length == 0) or
+    (vs_install.stdout_lines[0] | trim | int not in [0, 3010])
   async: "{{ ludus_vs_build_tools_timeout }}"
   poll: 30
 
