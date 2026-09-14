@@ -43,8 +43,7 @@
 
 - name: Install .NET SDK via Chocolatey
   chocolatey.chocolatey.win_chocolatey:
-    name: "dotnet-sdk"
-    version: "{{ ludus_dotnet_sdk_version }}"
+    name: "{{ ludus_dotnet_sdk_package }}"
     state: present
 
 - name: Add VS Build Tools to system PATH

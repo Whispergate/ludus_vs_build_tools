@@ -35,7 +35,7 @@ Ansible role that performs a silent installation of Visual Studio 2022 Build Too
 | `ludus_vs_build_tools_install_dir` | `C:\BuildTools` | Installation directory |
 | `ludus_vs_build_tools_workloads` | `[VCTools, ManagedDesktopBuildTools]` | VS workloads to install |
 | `ludus_vs_build_tools_components` | `[Windows11SDK.22621, VC.Tools.x86.x64]` | Additional VS components |
-| `ludus_dotnet_sdk_version` | `8.0` | .NET SDK version |
+| `ludus_dotnet_sdk_package` | `dotnet-8.0-sdk` | Chocolatey .NET SDK package (version-line meta-package) |
 | `ludus_vs_build_tools_timeout` | `3600` | Install timeout in seconds |
 
 ## Required Ansible Collections
