@@ -85,6 +85,12 @@
     name: nuget.commandline
     state: present
 
+- name: Install .NET Framework Developer Packs
+  chocolatey.chocolatey.win_chocolatey:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ ludus_dotnet_framework_devpacks }}"
+
 - name: Add VS Build Tools to system PATH
   ansible.windows.win_path:
     elements:
