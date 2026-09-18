@@ -4,6 +4,14 @@
     path: C:\Temp\VSSetup
     state: directory
 
+- name: Enable .NET Framework 3.5 Windows feature
+  ansible.windows.win_feature:
+    name:
+      - NET-Framework-Features
+      - NET-Framework-Core
+    state: present
+    include_sub_features: true
+
 - name: Download VS Build Tools installer
   ansible.windows.win_get_url:
     url: "{{ ludus_vs_build_tools_installer_url }}"
@@ -44,6 +52,11 @@
 - name: Install .NET SDK via Chocolatey
   chocolatey.chocolatey.win_chocolatey:
     name: "{{ ludus_dotnet_sdk_package }}"
+    state: present
+
+- name: Install NuGet CLI via Chocolatey
+  chocolatey.chocolatey.win_chocolatey:
+    name: nuget.commandline
     state: present
 
 - name: Add VS Build Tools to system PATH

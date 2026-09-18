@@ -9,6 +9,22 @@ ludus_vs_build_tools_workloads:
 ludus_vs_build_tools_components:
   - Microsoft.VisualStudio.Component.Windows11SDK.22621
   - Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+  # .NET Framework targeting packs (3.5 through 4.8.1)
+  - Microsoft.Net.Component.3.5.DeveloperTools
+  - Microsoft.Net.Component.4.5.1.TargetingPack
+  - Microsoft.Net.Component.4.5.2.TargetingPack
+  - Microsoft.Net.Component.4.6.TargetingPack
+  - Microsoft.Net.Component.4.6.1.TargetingPack
+  - Microsoft.Net.Component.4.6.2.TargetingPack
+  - Microsoft.Net.Component.4.7.TargetingPack
+  - Microsoft.Net.Component.4.7.1.TargetingPack
+  - Microsoft.Net.Component.4.7.2.TargetingPack
+  - Microsoft.Net.Component.4.7.2.SDK
+  - Microsoft.Net.Component.4.8.TargetingPack
+  - Microsoft.Net.Component.4.8.SDK
+  - Microsoft.Net.Component.4.8.1.TargetingPack
+  - Microsoft.Net.Component.4.8.1.SDK
+  - Microsoft.Net.ComponentGroup.DevelopmentPrerequisites
 # Version-line Chocolatey meta-package. "dotnet-8.0-sdk" is satisfied by any
 # 8.0.x already present (avoids exact-patch mismatches). Override with another
 # line (e.g. "dotnet-9.0-sdk") or a fully pinned package if needed.
