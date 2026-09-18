@@ -1,9 +1,4 @@
 ---
-- name: Create temp directory for installers
-  ansible.windows.win_file:
-    path: C:\Temp\VSSetup
-    state: directory
-
 - name: Check if .NET Framework 3.5 is already installed
   ansible.windows.win_shell: |
     $feature = Get-WindowsFeature NET-Framework-Core
@@ -38,42 +33,31 @@
   async: 600
   poll: 15
 
-- name: Download VS Build Tools installer
-  ansible.windows.win_get_url:
-    url: "{{ ludus_vs_build_tools_installer_url }}"
-    dest: C:\Temp\VSSetup\vs_buildtools.exe
+- name: Ensure the VS Build Tools install directory exists
+  # The VS installer's TargetDirCheck pre-check fails ("Installation folder
+  # 'C:\BuildTools' could not be found", installer exit 8004) when a prior
+  # instance is registered to this installPath but the folder was removed
+  # (e.g. a half-completed earlier attempt). Creating it satisfies the check;
+  # on a clean VM this is a harmless empty directory the installer fills.
+  ansible.windows.win_file:
+    path: "{{ ludus_vs_build_tools_install_dir }}"
+    state: directory
 
-- name: Build VS Build Tools install arguments
-  ansible.builtin.set_fact:
-    _vs_install_args: >-
-      --quiet --wait --norestart
+- name: Install Visual Studio Build Tools via Chocolatey
+  # Driving vs_buildtools.exe directly is unreliable: it is a self-extracting
+  # bootstrapper that relaunches a detached child and exits immediately, so
+  # Start-Process/WaitForExit races the real installer and returns a spurious
+  # exit code 1 (with no dd_setup log). The Chocolatey package waits for the
+  # real installer and treats VS installer exit codes (0/1605/1614/1641/3010)
+  # correctly, including 3010 = reboot required.
+  chocolatey.chocolatey.win_chocolatey:
+    name: "visualstudio{{ ludus_vs_build_tools_version }}buildtools"
+    state: present
+    package_params: >-
       --installPath {{ ludus_vs_build_tools_install_dir }}
-      --channelUri {{ ludus_vs_build_tools_channel_url }}
-      {% for workload in ludus_vs_build_tools_workloads %}
-      --add {{ workload }}
-      {% endfor %}
-      {% for component in ludus_vs_build_tools_components %}
-      --add {{ component }}
-      {% endfor %}
-
-- name: Install Visual Studio Build Tools (this takes a while)
-  ansible.windows.win_shell: |
-    $proc = Start-Process -FilePath "C:\Temp\VSSetup\vs_buildtools.exe" `
-      -ArgumentList '{{ _vs_install_args }}' `
-      -PassThru
-    # Cache the handle so .NET keeps the process object alive and ExitCode
-    # is populated after the process exits (avoids the -Wait/-PassThru race
-    # that throws "Process must exit before requested information...").
-    $null = $proc.Handle
-    $proc.WaitForExit()
-    $proc.ExitCode
-  register: vs_install
-  changed_when: (vs_install.stdout_lines | length > 0) and (vs_install.stdout_lines[0] | trim | int == 0)
-  failed_when: >-
-    (vs_install.stdout_lines | length == 0) or
-    (vs_install.stdout_lines[0] | trim | int not in [0, 3010])
-  async: "{{ ludus_vs_build_tools_timeout }}"
-  poll: 30
+      {% for workload in ludus_vs_build_tools_workloads %}--add {{ workload }} {% endfor %}
+      {% for component in ludus_vs_build_tools_components %}--add {{ component }} {% endfor %}
+  register: vs_buildtools_install
 
 - name: Install .NET SDK via Chocolatey
   chocolatey.chocolatey.win_chocolatey:
@@ -98,8 +82,3 @@
       - '{{ ludus_vs_build_tools_install_dir }}\VC\Tools\MSVC'
     scope: machine
     state: present
-
-- name: Clean up installer
-  ansible.windows.win_file:
-    path: C:\Temp\VSSetup
-    state: absent
