@@ -69,6 +69,31 @@
     name: nuget.commandline
     state: present
 
+- name: Install .NET 4.0 reference assemblies via NuGet
+  # No Chocolatey devpack exists for .NET Framework 4.0 (the base targeting
+  # pack shipped only with Windows SDK v7.1 / VS 2010). The NuGet meta-package
+  # drops reference assemblies where MSBuild expects them.
+  ansible.windows.win_shell: |
+    $refDir = "${env:ProgramFiles(x86)}\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
+    if (Test-Path "$refDir\mscorlib.dll") {
+      Write-Output "already installed"
+      exit 0
+    }
+    nuget install Microsoft.NETFramework.ReferenceAssemblies.net40 -OutputDirectory $env:TEMP\refasm -NonInteractive
+    $src = Get-ChildItem "$env:TEMP\refasm" -Directory -Filter "Microsoft.NETFramework.ReferenceAssemblies.net40*" |
+      Select-Object -First 1
+    if (-not $src) { throw "NuGet package not found after install" }
+    $buildDir = Get-ChildItem $src.FullName -Directory -Filter "build" -Recurse | Select-Object -First 1
+    $frameworkDir = Get-ChildItem $buildDir.FullName -Directory -Filter ".NETFramework" -Recurse | Select-Object -First 1
+    $v40Dir = Get-ChildItem $frameworkDir.FullName -Directory -Filter "v4.0" | Select-Object -First 1
+    if (-not $v40Dir) { throw "v4.0 directory not found in NuGet package" }
+    if (-not (Test-Path $refDir)) { New-Item -ItemType Directory -Path $refDir -Force | Out-Null }
+    Copy-Item "$($v40Dir.FullName)\*" $refDir -Recurse -Force
+    Remove-Item "$env:TEMP\refasm" -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Output "installed"
+  register: _net40_ref
+  changed_when: _net40_ref.stdout | trim == 'installed'
+
 - name: Install .NET Framework Developer Packs
   chocolatey.chocolatey.win_chocolatey:
     name: "{{ item }}"

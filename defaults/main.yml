@@ -12,8 +12,7 @@ ludus_vs_build_tools_components:
 # .NET Framework Developer Packs installed separately via Chocolatey.
 # These are standalone reference assembly installers, not VS components.
 ludus_dotnet_framework_devpacks:
-  - netfx-4.0-devpack
-  - netfx-4.5-devpack
+  - netfx-4.5.1-devpack
   - netfx-4.5.2-devpack
   - netfx-4.6.1-devpack
   - netfx-4.6.2-devpack
